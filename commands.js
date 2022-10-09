@@ -80,3 +80,17 @@ export const CHALLENGE_COMMAND = {
   ],
   type: 1,
 };
+
+export const SAVE_DATA = {
+  name: 'savedata',
+  description: 'Save Data Test',
+  type: 1,
+
+};
+
+export const GAME_START = {
+  name: 'gamestart',
+  description: 'Start the game',
+  type: 1,
+
+};

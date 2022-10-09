@@ -7,20 +7,23 @@ import {
   MessageComponentTypes,
   ButtonStyleTypes,
 } from 'discord-interactions';
-import { VerifyDiscordRequest, getRandomEmoji, DiscordRequest } from './utils.js';
+import * as utils from './utils.js';
 import { getShuffledOptions, getResult } from './game.js';
 import {
   CHALLENGE_COMMAND,
   TEST_COMMAND,
   HasGuildCommands,
+  SAVE_DATA,
+  GAME_START,
 } from './commands.js';
+import * as fs from 'fs';
 
 // Create an express app
 const app = express();
 // Get port, or default to 3000
 const PORT = process.env.PORT || 3000;
 // Parse request body and verifies incoming requests using discord-interactions package
-app.use(express.json({ verify: VerifyDiscordRequest(process.env.PUBLIC_KEY) }));
+app.use(express.json({ verify: utils.VerifyDiscordRequest(process.env.PUBLIC_KEY) }));
 
 // Store for in-progress games. In production, you'd want to use a DB
 const activeGames = {};
@@ -53,7 +56,7 @@ app.post('/interactions', async function (req, res) {
         type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
         data: {
           // Fetches a random emoji to send from a helper function
-          content: 'hello world ' + getRandomEmoji(),
+          content: 'hello world ' + utils.getRandomEmoji(),
         },
       });
     }
@@ -88,6 +91,47 @@ app.post('/interactions', async function (req, res) {
               ],
             },
           ],
+        },
+      });
+    }
+    if (name === 'savedata'){
+      
+      let student = { 
+        name: 'Mike',
+        age: 23, 
+        gender: 'Male',
+        department: 'English',
+        car: 'Honda' 
+      };
+
+      let data = JSON.stringify(student);
+      fs.writeFileSync(`${getPath()}student-2.json`, data);
+
+      return res.send({
+        type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+        data: {
+          // Fetches a random emoji to send from a helper function
+          content: getPath() + getRandomEmoji(),
+        },
+      });
+    }
+
+    if (name === 'gamestart'){
+      
+      var answers = [];
+
+      for (let i = 0; i < 100; i++) {
+        answers.push(utils.Game.getRandom(1,1000));
+      }
+
+      let data = JSON.stringify(answers);
+      fs.writeFileSync(`${utils.getPath()}/answer.json`, data);
+
+      return res.send({
+        type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+        data: {
+          // Fetches a random emoji to send from a helper function
+          content: "Game Started"
         },
       });
     }
@@ -180,7 +224,7 @@ app.listen(PORT, () => {
 
   // Check if guild commands from commands.js are installed (if not, install them)
   HasGuildCommands(process.env.APP_ID, process.env.GUILD_ID, [
-    TEST_COMMAND,
-    CHALLENGE_COMMAND,
+    GAME_START,
+
   ]);
 });

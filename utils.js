@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import fetch from 'node-fetch';
 import { verifyKey } from 'discord-interactions';
+import * as fs from 'fs';
 
 export function VerifyDiscordRequest(clientKey) {
   return function (req, res, buf, encoding) {
@@ -47,4 +48,33 @@ export function getRandomEmoji() {
 
 export function capitalize(str) {
   return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+export function getPath(){
+  var dir = process.env.DISCORD_STORAGE_PATH;
+  
+  if (!fs.existsSync(dir)){
+    fs.mkdirSync(dir, { recursive: true });
+  }
+
+  return dir;
+}
+
+export function getRandom(min, max){
+  return Math.floor(Math.random() * (max-min)+min);
+}
+
+export const Game = {
+  getRandom(min, max){
+    return Math.floor(Math.random() * (max-min)+min);
+  },
+  getPath(){
+    var dir = process.env.DISCORD_STORAGE_PATH;
+    
+    if (!fs.existsSync(dir)){
+      fs.mkdirSync(dir, { recursive: true });
+    }
+  
+    return dir;
+  }
 }

@@ -1,103 +1,55 @@
-import { capitalize } from './utils.js';
 
-export function getResult(p1, p2) {
-  let gameResult;
-  if (RPSChoices[p1.objectName] && RPSChoices[p1.objectName][p2.objectName]) {
-    // o1 wins
-    gameResult = {
-      win: p1,
-      lose: p2,
-      verb: RPSChoices[p1.objectName][p2.objectName],
-    };
-  } else if (
-    RPSChoices[p2.objectName] &&
-    RPSChoices[p2.objectName][p1.objectName]
-  ) {
-    // o2 wins
-    gameResult = {
-      win: p2,
-      lose: p1,
-      verb: RPSChoices[p2.objectName][p1.objectName],
-    };
-  } else {
-    // tie -- win/lose don't
-    gameResult = { win: p1, lose: p2, verb: 'tie' };
-  }
+import * as fs from 'fs';
 
-  return formatResult(gameResult);
-}
+import * as discord from 'discord-interactions';
 
-function formatResult(result) {
-  const { win, lose, verb } = result;
-  return verb === 'tie'
-    ? `<@${win.id}> and <@${lose.id}> draw with **${win.objectName}**`
-    : `<@${win.id}>'s **${win.objectName}** ${verb} <@${lose.id}>'s **${lose.objectName}**`;
-}
+export const Game = {
+  start(req, res){
 
-// this is just to figure out winner + verb
-const RPSChoices = {
-  rock: {
-    description: 'sedimentary, igneous, or perhaps even metamorphic',
-    virus: 'outwaits',
-    computer: 'smashes',
-    scissors: 'crushes',
-  },
-  cowboy: {
-    description: 'yeehaw~',
-    scissors: 'puts away',
-    wumpus: 'lassos',
-    rock: 'steel-toe kicks',
-  },
-  scissors: {
-    description: 'careful ! sharp ! edges !!',
-    paper: 'cuts',
-    computer: 'cuts cord of',
-    virus: 'cuts DNA of',
-  },
-  virus: {
-    description: 'genetic mutation, malware, or something inbetween',
-    cowboy: 'infects',
-    computer: 'corrupts',
-    wumpus: 'infects',
-  },
-  computer: {
-    description: 'beep boop beep bzzrrhggggg',
-    cowboy: 'overwhelms',
-    paper: 'uninstalls firmware for',
-    wumpus: 'deletes assets for',
-  },
-  wumpus: {
-    description: 'the purple Discord fella',
-    paper: 'draws picture on',
-    rock: 'paints cute face on',
-    scissors: 'admires own reflection in',
-  },
-  paper: {
-    description: 'versatile and iconic',
-    virus: 'ignores',
-    cowboy: 'gives papercut to',
-    rock: 'covers',
-  },
-};
+    var answers = [];
+    var user = req.body.member.user;
 
-export function getRPSChoices() {
-  return Object.keys(RPSChoices);
-}
+    for (let i = 0; i < 100; i++) {
+      answers.push(this.getRandom(1,1000));
+    }
 
-// Function to fetch shuffled options for select menu
-export function getShuffledOptions() {
-  const allChoices = getRPSChoices();
-  const options = [];
+    let data = JSON.stringify(answers);
+    fs.writeFileSync(`${this.getPath()}/answer.json`, data);
 
-  for (let c of allChoices) {
-    // Formatted for select menus
-    // https://discord.com/developers/docs/interactions/message-components#select-menu-object-select-option-structure
-    options.push({
-      label: capitalize(c),
-      value: c.toLowerCase(),
-      description: RPSChoices[c]['description'],
+    console.log(req.body);
+
+    return res.send({
+      type: discord.InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+      data: {
+        // Fetches a random emoji to send from a helper function
+        content: "Game Started",
+        components: [
+          {
+            type: 1,
+            components: [
+              {
+                type: 2,
+                label: "click",
+                style: 1,
+                custom_id: "click 1"
+              }
+            ]
+          }
+        ]
+      },
     });
-  }
+  },
 
-  return options.sort(() => Math.random() - 0.5);
+  getRandom(min, max){
+    return Math.floor(Math.random() * (max-min)+min);
+  },
+  getPath(){
+    var dir = process.env.DISCORD_STORAGE_PATH;
+    
+    if (!fs.existsSync(dir)){
+      fs.mkdirSync(dir, { recursive: true });
+    }
+  
+    return dir;
+  }
 }

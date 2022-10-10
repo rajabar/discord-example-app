@@ -8,9 +8,8 @@ import {
   ButtonStyleTypes,
 } from 'discord-interactions';
 import * as utils from './utils.js';
-import { getShuffledOptions, getResult } from './game.js';
+import { Game } from './game.js';
 import {
-  CHALLENGE_COMMAND,
   TEST_COMMAND,
   HasGuildCommands,
   SAVE_DATA,
@@ -117,23 +116,7 @@ app.post('/interactions', async function (req, res) {
     }
 
     if (name === 'gamestart'){
-      
-      var answers = [];
-
-      for (let i = 0; i < 100; i++) {
-        answers.push(utils.Game.getRandom(1,1000));
-      }
-
-      let data = JSON.stringify(answers);
-      fs.writeFileSync(`${utils.getPath()}/answer.json`, data);
-
-      return res.send({
-        type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-        data: {
-          // Fetches a random emoji to send from a helper function
-          content: "Game Started"
-        },
-      });
+      return Game.start(req, res);
     }
   }
 

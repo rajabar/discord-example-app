@@ -63,18 +63,3 @@ export function getPath(){
 export function getRandom(min, max){
   return Math.floor(Math.random() * (max-min)+min);
 }
-
-export const Game = {
-  getRandom(min, max){
-    return Math.floor(Math.random() * (max-min)+min);
-  },
-  getPath(){
-    var dir = process.env.DISCORD_STORAGE_PATH;
-    
-    if (!fs.existsSync(dir)){
-      fs.mkdirSync(dir, { recursive: true });
-    }
-  
-    return dir;
-  }
-}
